@@ -71,6 +71,16 @@ class ReActSingleInputOutputParser(AgentOutputParser):
                 {"output": text.split(FINAL_ANSWER_ACTION)[-1].strip()}, text
             )
 
+        # For the case where no tool is specified, i.e, invalid questions, simply return the
+        # tough as the final answer.
+        elif action_match is None:
+            final_thought = text.replace('Thought', 'Final Answer')
+            if 'Action' in final_thought:
+                final_thought = final_thought.split('Action')[0]
+            return AgentFinish(
+                {"output": final_thought.split(FINAL_ANSWER_ACTION)[-1].strip()}, text
+            )
+
         if not re.search(r"Action\s*\d*\s*:[\s]*(.*?)", text, re.DOTALL):
             raise OutputParserException(
                 f"Could not parse LLM output: `{text}`",
